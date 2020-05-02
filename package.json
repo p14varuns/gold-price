@@ -1,0 +1,20 @@
+{
+  "name": "goldprice",
+  "version": "1.0.0",
+  "description": "Returns gold prices from World Gold Council Site",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "follow-redirects": "^1.11.0",
+    "fs": "0.0.1-security",
+    "moment-timezone": "^0.5.28",
+    "node-cron": "^2.0.3",
+    "node-html-parser": "^1.2.16",
+    "puppeteer": "^3.0.2"
+  }
+}
