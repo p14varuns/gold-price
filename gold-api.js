@@ -2,7 +2,10 @@ var HTMLParser = require('node-html-parser');
 const puppeteer = require('puppeteer');
 
 const getHTML = async () => {
-  const browser = await puppeteer.launch();
+  const browser = await puppeteer.launch({
+  executablePath: '/usr/bin/chromium-browser',
+  args: ['--no-sandbox']
+  });
   const page = await browser.newPage();
   await page.goto('https://www.gold.org/goldhub/data/gold-prices', {waitUntil: 'networkidle2'});
   const html = await page.content(); // serialized HTML

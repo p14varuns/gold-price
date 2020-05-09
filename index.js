@@ -4,7 +4,7 @@ var lib = require('./gold-api');
 var moment = require('moment-timezone');
 
 var app = express();
-app.listen(3002, () => {
+app.listen(3000, () => {
  console.log("Server running on port 3000");
 });
 
@@ -23,7 +23,7 @@ var prices = {
   "timestamp":"2 May 2020 11:28:01"
 };
 
-app.get('/gold-prices', function(req, res) {
+app.get('/', function(req, res) {
   res.setHeader('Content-Type', 'application/json');
   res.json(prices);
 });
@@ -38,6 +38,7 @@ updatePrices = () => {
 
 updatePrices();
 
+/*
 cron.schedule('5,15,25,35,45,55 * * * *', () => {
   moment.tz.setDefault("Europe/London");
   localLondonTime = moment();
@@ -47,3 +48,4 @@ cron.schedule('5,15,25,35,45,55 * * * *', () => {
     updatePrices();
   };
 });
+*/
