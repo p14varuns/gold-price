@@ -1,11 +1,19 @@
-var HTMLParser = require('node-html-parser');
-const puppeteer = require('puppeteer');
+const HTMLParser = require('node-html-parser');
+const puppeteer = require('puppeteer'); 
+const config = require('./config');
 
 const getHTML = async () => {
-  const browser = await puppeteer.launch({
-  executablePath: '/usr/bin/chromium-browser',
-  args: ['--no-sandbox']
-  });
+  console.log(config.PROD);
+  let browser;
+  if(config.PROD){
+    browser = config.PROD ? await puppeteer.launch({
+      executablePath: '/usr/bin/chromium-browser',
+      args: ['--no-sandbox']
+      }) : await puppeteer.launch();
+  } else {
+    browser = await puppeteer.launch();
+  };
+  
   const page = await browser.newPage();
   await page.goto('https://www.gold.org/goldhub/data/gold-prices', {waitUntil: 'networkidle2'});
   const html = await page.content(); // serialized HTML
