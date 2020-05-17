@@ -10,10 +10,12 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.17.1",
+    "fetch-json": "^2.2.7",
     "follow-redirects": "^1.11.0",
     "fs": "0.0.1-security",
     "moment-timezone": "^0.5.28",
     "node-cron": "^2.0.3",
+    "node-fetch": "^2.6.0",
     "node-html-parser": "^1.2.16",
     "puppeteer": "^3.0.2"
   }
