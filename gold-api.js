@@ -15,6 +15,16 @@ const getHTML = async () => {
   };
   
   const page = await browser.newPage();
+  await page.setRequestInterception(true);
+  page.on('request', (request) => {
+      var allowedRequests = ['document', 'xhr', 'script'];
+      if (allowedRequests.includes(request.resourceType())) {
+          request.continue();
+      } else {
+          request.abort();
+      }
+  });
+
   await page.goto('https://www.gold.org/goldhub/data/gold-prices', {waitUntil: 'networkidle2'});
   const html = await page.content(); // serialized HTML
   await browser.close();
