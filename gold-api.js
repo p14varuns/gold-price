@@ -1,6 +1,9 @@
 const HTMLParser = require('node-html-parser');
 const puppeteer = require('puppeteer'); 
 const config = require('./config');
+const fetchJson = require('fetch-json');
+const moment = require('moment-timezone');
+moment.tz.setDefault("Europe/London");
 
 const getHTML = async () => {
   console.log(config.PROD);
@@ -49,11 +52,53 @@ var goldprice = async () => {
     }
     // London Time
     localPrices["timestamp"] = root.querySelector(".spotprice-update-time").text;
-    //res.json(localPrices);
+
   });
   return localPrices;
 };
 
+
+var eodPrice = async (date) => {
+  const url = 'https://www.quandl.com/api/v3/datasets/LBMA/GOLD';
+  const params = { 
+    end_date: date,
+    start_date: date,
+    api_key: config.API_KEY 
+  };
+  const handleData = (data) => {
+    var prices = data.dataset.data[0];
+    var eodPrices = {
+      "USD": prices[2],
+      "GBP": prices[4],
+      "EUR": prices[6]
+    };
+    console.log(eodPrices);
+    
+    return eodPrices;
+  }
+  
+  fetchJson.get(url, params).then(handleData);
+};
+
+
+var getChange = async () => {
+  // Call Gold Price
+
+  // Find eod Price for prev day if reqd, else memorize 
+  localLondonTime = moment();
+  if(localLondonTime.day() == 0){
+    prevDate = localLondonTime.subtract(2,'days');
+  } else {
+    prevDate = localLondonTime.subtract(1,'days');
+  };
+  console.log(prevDate.format('YYYY-MM-DD'));
+
+  // Calculate change and return val
+}
+
+eodPrice("2020-05-15");
+
 module.exports = {
-  goldprice
+  goldprice,
+  eodPrice
 };
