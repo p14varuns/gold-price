@@ -95,23 +95,47 @@ var eodPriceAsOf = async (date) => {
   };
 };
 
+var getFXRates = async (date) => {
+  const url = 'https://api.exchangeratesapi.io/history';
+  var dateString = date.format("YYYY-MM-DD");
+  const params = { 
+    end_at: dateString,
+    start_at: dateString,
+    base: "USD"
+  };
+  var fxRates = null;
+  await fetchJson.get(url, params).then((data) => {
+    fxRates = data["rates"][dateString];
+  });
+  return fxRates;
+};
+
 var getPriceData = async (date) => {
   // Call Gold Price
   const [lastPrices, lastDate] = await eodPriceAsOf(date);
+  const lastFXRates = await getFXRates(lastDate);
   const [prevPrices, prevDate] = await eodPriceAsOf(lastDate.subtract(1,'days'));
-  
+  const prevFXRates = await getFXRates(prevDate);
   // Calculate change and return val
   var prices = {};
   currs = Object.keys(lastPrices);
   for(curr of currs){
     if(curr != 'date'){
       prices[curr] = {
-        "price": lastPrices[curr],
+        "price": lastPrices[curr].toFixed(2),
         "change%": (100 * ( lastPrices[curr]/prevPrices[curr] - 1)).toFixed(2)
       }
     }
   };
 
+  var otherCurrs = ["AUD","CAD","CHF","JPY","ZAR","INR","CNY","HKD"];
+  for(curr of otherCurrs){
+    prices[curr] = {
+      "price": (lastPrices["USD"] * lastFXRates[curr]).toFixed(2),
+      "change%": (100*((lastFXRates[curr]*lastPrices["USD"])/(prevFXRates[curr]*prevPrices["USD"]) - 1)).toFixed(2),
+    }
+  }
+  
   prices['lastDate'] = lastPrices.date;
   return prices;
 };
