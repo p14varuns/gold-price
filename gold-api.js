@@ -5,6 +5,7 @@ const fetchJson = require('fetch-json');
 const moment = require('moment-timezone');
 moment.tz.setDefault("Europe/London");
 
+// Fetches HTML from gold.org
 const getHTML = async () => {
   console.log(config.PROD);
   let browser;
@@ -34,9 +35,8 @@ const getHTML = async () => {
   return html;
 };
 
-
+// Processes data from gold.org
 var goldprice = async () => {
-
   var localPrices = {};
   // Fetch API results
   await getHTML().then(result => {
@@ -57,48 +57,65 @@ var goldprice = async () => {
   return localPrices;
 };
 
-
+// Uses Quandl LBMA prices
 var eodPrice = async (date) => {
   const url = 'https://www.quandl.com/api/v3/datasets/LBMA/GOLD';
   const params = { 
-    end_date: date,
-    start_date: date,
+    end_date: date.format("YYYY-MM-DD"),
+    start_date: date.format("YYYY-MM-DD"),
     api_key: config.API_KEY 
   };
-  const handleData = (data) => {
-    var prices = data.dataset.data[0];
-    var eodPrices = {
-      "USD": prices[2],
-      "GBP": prices[4],
-      "EUR": prices[6]
-    };
-    console.log(eodPrices);
-    
-    return eodPrices;
-  }
   
-  fetchJson.get(url, params).then(handleData);
+  await fetchJson.get(url, params).then((data) => {
+    var prices = data.dataset.data[0];
+    if(!prices){ // No data for this date
+      eodPrices = null;
+    } else {
+      eodPrices = {
+        "date": prices[0],
+        "USD": prices[2],
+        "GBP": prices[4],
+        "EUR": prices[6]
+      };      
+    }
+  });
+  return eodPrices;
 };
 
-
-var getChange = async () => {
-  // Call Gold Price
-
-  // Find eod Price for prev day if reqd, else memorize 
-  localLondonTime = moment();
-  if(localLondonTime.day() == 0){
-    prevDate = localLondonTime.subtract(2,'days');
-  } else {
-    prevDate = localLondonTime.subtract(1,'days');
+// Uses Quandl LBMA prices
+var eodPriceAsOf = async (date) => {
+  var prices = null;
+  while(1){  
+    prices = await eodPrice(date);
+    if(!prices){
+      date = date.subtract(1,'days');
+    }else{
+      return [prices, date];
+    }
   };
-  console.log(prevDate.format('YYYY-MM-DD'));
+};
 
+var getPriceData = async (date) => {
+  // Call Gold Price
+  const [lastPrices, lastDate] = await eodPriceAsOf(date);
+  const [prevPrices, prevDate] = await eodPriceAsOf(lastDate.subtract(1,'days'));
+  
   // Calculate change and return val
-}
+  var prices = {};
+  currs = Object.keys(lastPrices);
+  for(curr of currs){
+    if(curr != 'date'){
+      prices[curr] = {
+        "price": lastPrices[curr],
+        "change%": (100 * ( lastPrices[curr]/prevPrices[curr] - 1)).toFixed(2)
+      }
+    }
+  };
 
-eodPrice("2020-05-15");
+  prices['lastDate'] = lastPrices.date;
+  return prices;
+};
 
 module.exports = {
-  goldprice,
-  eodPrice
+  getPriceData
 };
