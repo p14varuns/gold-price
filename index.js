@@ -22,7 +22,7 @@ goldlib.getPriceData(today).then(result => {
   prices = result;
 });
 
-cron.schedule('1 * * * *', () => {
+cron.schedule('1 1,4,7,10,13,16,19,22 * * *', () => {
   localLondonTime = moment();
   if(localLondonTime.date() != today.date()){
     today=localLondonTime;
