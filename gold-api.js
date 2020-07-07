@@ -66,31 +66,30 @@ var eodPrice = async (date) => {
     api_key: config.API_KEY 
   };
   
+  var prices = null;
+  // Split this function to return prices variable only
   await fetchJson.get(url, params).then((data) => {
-    var prices = data.dataset.data[0];
-    if(!prices){ // No data for this date
-      eodPrices = null;
-    } else {
+    if(data.dataset.data[0])
+      prices = data.dataset.data[0];
+  });
+  return prices;
+};
+
+// Uses Quandl LBMA prices
+var eodPriceAsOf = async (date) => {
+  var eodPrices = null;
+  while(1){  
+    var prices = await eodPrice(date);
+    if(!prices){
+      date = date.subtract(1,'days');
+    }else{
       eodPrices = {
         "date": prices[0],
         "USD": prices[2],
         "GBP": prices[4],
         "EUR": prices[6]
-      };      
-    }
-  });
-  return eodPrices;
-};
-
-// Uses Quandl LBMA prices
-var eodPriceAsOf = async (date) => {
-  var prices = null;
-  while(1){  
-    prices = await eodPrice(date);
-    if(!prices){
-      date = date.subtract(1,'days');
-    }else{
-      return [prices, date];
+      };     
+      return [eodPrices, date];
     }
   };
 };
@@ -141,5 +140,6 @@ var getPriceData = async (date) => {
 };
 
 module.exports = {
-  getPriceData
+  getPriceData,
+  eodPrice
 };
