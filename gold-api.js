@@ -3,6 +3,21 @@ const fetchJson = require('fetch-json');
 const moment = require('moment-timezone');
 moment.tz.setDefault("Europe/London");
 
+var getFXRates = async (date) => {
+  const url = 'https://api.exchangeratesapi.io/history';
+  var dateString = date.format("YYYY-MM-DD");
+  const params = { 
+    end_at: dateString,
+    start_at: dateString,
+    base: "USD"
+  };
+  var fxRates = null;
+  await fetchJson.get(url, params).then((data) => {
+    fxRates = data["rates"][dateString];
+  });
+  return fxRates;
+};
+
 // Uses Quandl LBMA prices
 var eodPrice = async (date) => {
   const url = 'https://www.quandl.com/api/v3/datasets/LBMA/GOLD';
@@ -27,7 +42,7 @@ var eodPriceAsOf = async (date) => {
   while(1){  
     var prices = await eodPrice(date);
     if(!prices){
-      date = date.subtract(1,'days');
+      date.subtract(1,'days');
     }else{
       eodPrices = {
         "date": prices[0],
@@ -40,27 +55,15 @@ var eodPriceAsOf = async (date) => {
   };
 };
 
-var getFXRates = async (date) => {
-  const url = 'https://api.exchangeratesapi.io/history';
-  var dateString = date.format("YYYY-MM-DD");
-  const params = { 
-    end_at: dateString,
-    start_at: dateString,
-    base: "USD"
-  };
-  var fxRates = null;
-  await fetchJson.get(url, params).then((data) => {
-    fxRates = data["rates"][dateString];
-  });
-  return fxRates;
-};
-
 var getPriceData = async (date) => {
   // Call Gold Price
-  const [lastPrices, lastDate] = await eodPriceAsOf(date);
+  var dateToRun = date.clone();
+  const [lastPrices, lastDate] = await eodPriceAsOf(dateToRun);
   const lastFXRates = await getFXRates(lastDate);
-  const [prevPrices, prevDate] = await eodPriceAsOf(lastDate.subtract(1,'days'));
+  dateToRun = lastDate.clone().subtract(1,'days');
+  const [prevPrices, prevDate] = await eodPriceAsOf(dateToRun);
   const prevFXRates = await getFXRates(prevDate);
+  
   // Calculate change and return val
   var prices = {};
   currs = Object.keys(lastPrices);
