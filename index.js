@@ -27,6 +27,7 @@ goldlib.getPriceData(today.clone()).then(result => {
 });
 
 cron.schedule('1 8,9,10 * * *', () => {
+  console.log("Running Cron");
   var localLondonTime = moment();
   if(localLondonTime.date() != today.date()){
     // Updating Price for today
@@ -41,7 +42,6 @@ cron.schedule('1 8,9,10 * * *', () => {
         if(result)
           db.addtoDatabase(result);
       });
-
     });
   }
 });
