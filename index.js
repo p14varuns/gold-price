@@ -21,21 +21,22 @@ app.get('/', function(req, res) {
   res.json(prices);
 });
 
-goldlib.getPriceData(today).then(result => {
-  // Initialization
+ // Initialization
+ goldlib.getPriceData(today.clone()).then(result => {
   prices = result;
 });
 
-cron.schedule('1 1,4,7,10,13,16,19,22 * * *', () => {
-  localLondonTime = moment();
+cron.schedule('1 8,9,10 * * *', () => {
+  var localLondonTime = moment();
   if(localLondonTime.date() != today.date()){
     // Updating Price for today
-    today=localLondonTime;
-    goldlib.getPriceData(today).then(result => {
+    today=localLondonTime.clone();
+    goldlib.getPriceData(localLondonTime).then(result => {
       prices = result;      
-      
+      console.log(prices);
       // Update price to DB
-      goldlib.eodPrice(today.subtract(1,'days')).then(result => {
+      var dayBefore = today.clone().subtract(1,'days');
+      goldlib.eodPrice(dayBefore).then(result => {
         console.log("log prices: ", result);
         if(result)
           db.addtoDatabase(result);
