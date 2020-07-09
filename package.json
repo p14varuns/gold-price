@@ -13,6 +13,7 @@
     "fetch-json": "^2.2.7",
     "follow-redirects": "^1.11.0",
     "fs": "0.0.1-security",
+    "log-timestamp": "^0.3.0",
     "moment-timezone": "^0.5.28",
     "mysql": "^2.18.1",
     "node-cron": "^2.0.3",

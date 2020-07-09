@@ -3,6 +3,7 @@ var express = require("express");
 var goldlib = require('./gold-api');
 var db = require('./database');
 var moment = require('moment-timezone');
+require('log-timestamp');
 
 moment.tz.setDefault("Europe/London");
 var today = moment();
