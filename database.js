@@ -1,16 +1,18 @@
 const mysql = require('mysql');
 const config = require('./config');
 
-var con = mysql.createConnection({
-  host: config.DB_CREDENTIALS.HOST,
-  user: config.DB_CREDENTIALS.USER,
-  password: config.DB_CREDENTIALS.PASSWORD,
-  database: config.DB_CREDENTIALS.DATABASE
-});
+getConnection = () => {
+  return mysql.createConnection({
+    host: config.DB_CREDENTIALS.HOST,
+    user: config.DB_CREDENTIALS.USER,
+    password: config.DB_CREDENTIALS.PASSWORD,
+    database: config.DB_CREDENTIALS.DATABASE
+  });
+}
 
-con.connect();
 
 addtoDatabase = async (prices) => {
+  var con = getConnection();
   var sql1 = 
       `UPDATE goldprices.lbma_gold 
       SET EndDate = ? 
@@ -34,6 +36,7 @@ addtoDatabase = async (prices) => {
           throw err;
         if (results.affectedRows)
           console.log("Data updated in DB for " + prices);
+        con.destroy();
       });
   });
 };
