@@ -8,8 +8,7 @@ getConnection = () => {
     password: config.DB_CREDENTIALS.PASSWORD,
     database: config.DB_CREDENTIALS.DATABASE
   });
-}
-
+};
 
 addtoDatabase = async (prices) => {
   var con = getConnection();
@@ -41,6 +40,41 @@ addtoDatabase = async (prices) => {
   });
 };
 
+getReturnsAsOf = async (date, callback) => {
+  var con = getConnection();
+  var sql = 
+  `SELECT A.StartDate, B.StartDate as "PastDate", ROUND(A.\`USD(PM)\` - B.\`USD(PM)\`,2) as "Amount",
+  100*ROUND(A.\`USD(PM)\` / B.\`USD(PM)\` - 1,4) as "%Return"
+  FROM (SELECT * from lbma_gold where EndDate IS NULL) A
+  CROSS JOIN (Select * from lbma_gold where 
+  StartDate <= DATE_SUB( TODAY_DATE, INTERVAL 30 DAY) AND DATE_SUB(TODAY_DATE, INTERVAL 30 DAY) < EndDate
+  OR StartDate <= DATE_SUB(TODAY_DATE, INTERVAL 6 MONTH) AND DATE_SUB(TODAY_DATE, INTERVAL 6 MONTH) < EndDate
+  OR StartDate <= DATE_SUB(TODAY_DATE, INTERVAL 1 YEAR) AND DATE_SUB(TODAY_DATE, INTERVAL 1 YEAR) < EndDate
+  OR StartDate <= DATE_SUB(TODAY_DATE, INTERVAL 5 YEAR) AND DATE_SUB(TODAY_DATE, INTERVAL 5 YEAR) < EndDate
+  OR StartDate <= DATE_SUB(TODAY_DATE, INTERVAL 20 YEAR) AND DATE_SUB(TODAY_DATE, INTERVAL 20 YEAR) < EndDate) B
+  ORDER BY B.StartDate DESC`;
+
+  sql = sql.replace(/TODAY_DATE/g, "'" + date.format("YYYY-MM-DD") + "'");
+
+  con.query(sql, function (err, results) {
+    if (err)
+      throw err;
+    con.destroy();
+    var returns = {};
+    if(results){
+      timeframe = ["30 Days", "6 Months", "1 Year", "5 Years", "20 Years"];
+      for(i = 0; i < timeframe.length; i++){
+        returns[timeframe[i]] = {
+          "Amount": results[i]["Amount"],
+          "%Return": results[i]["%Return"]    
+        }
+      };
+    }
+    callback(returns);
+  });
+};
+
 module.exports = {
-    addtoDatabase
+    addtoDatabase,
+    getReturnsAsOf
 };

@@ -5,9 +5,10 @@ var db = require('./database');
 var moment = require('moment-timezone');
 require('log-timestamp');
 
-moment.tz.setDefault("Europe/London");
+moment.tz.setDefault("America/New_York");
 var today = moment();
 var prices = {};
+var returns = {};
 
 var app = express();
 app.listen(3000, () => {
@@ -21,27 +22,50 @@ app.get('/', function(req, res) {
   res.json(prices);
 });
 
-// Initialization
+app.get('/prices', function(req, res) {
+  // Return saved price value on API call
+  res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.json(prices);
+});
+
+app.get('/returns', function(req, res) {
+  // Return saved price value on API call
+  res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.json(returns);
+});
+
+// Initialization of Price Data
 goldlib.getPriceData(today.clone()).then(result => {
   prices = result;
 });
 
-cron.schedule('1 8,9,10 * * *', () => {
-  console.log("Running Cron");
-  var localLondonTime = moment();
-  if(localLondonTime.date() != today.date()){
-    // Updating Price for today
-    today=localLondonTime.clone();
-    goldlib.getPriceData(localLondonTime).then(result => {
-      prices = result;      
-      console.log(prices);
-      // Update price to DB
-      var dayBefore = today.clone().subtract(1,'days');
-      goldlib.eodPrice(dayBefore).then(result => {
-        console.log("log prices: ", result);
-        if(result)
-          db.addtoDatabase(result);
-      });
-    });
-  }
+// Initialization of Returns Data
+db.getReturnsAsOf(today, (results) => {
+  returns = results;
+  console.log("Returns Updated");
 });
+
+// Cron job to refresh prices every hour at 5th minute
+cron.schedule('5 * * * *', () => {
+  console.log("Running Cron");
+  var localTime = moment();
+  today=localTime.clone();
+  
+  console.log("Fetching prices");
+  goldlib.getPriceData(localTime).then(result => {
+    prices = result;      
+    console.log("Prices Updated: " + prices);
+  });
+    
+  console.log("Fetching returns");
+  db.getReturnsAsOf(today, (results) => {
+    returns = results;
+    console.log("Returns Updated: " + returns);
+  });
+},{
+  timezone: "America/New_York"
+});
+
+
