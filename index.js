@@ -15,13 +15,6 @@ app.listen(3000, () => {
  console.log("Server running on port 3000");
 });
 
-app.get('/', function(req, res) {
-  // Return saved price value on API call
-  res.setHeader('Content-Type', 'application/json');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.json(prices);
-});
-
 app.get('/prices', function(req, res) {
   // Return saved price value on API call
   res.setHeader('Content-Type', 'application/json');
@@ -49,10 +42,8 @@ db.getReturnsAsOf(today, (results) => {
 
 // Cron job to refresh prices every hour at 5th minute
 cron.schedule('5 * * * *', () => {
-  console.log("Running Cron");
   var localTime = moment();
   today=localTime.clone();
-  
   console.log("Fetching prices");
   goldlib.getPriceData(localTime).then(result => {
     prices = result;      
