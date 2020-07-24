@@ -1,3 +1,4 @@
+var cron = require('node-cron');
 const config = require("./config");
 const SitemapGenerator = require('sitemap-generator');
  
@@ -20,5 +21,11 @@ generator.on('done', () => {
   
 });
  
-// start the crawler
-generator.start();
+
+cron.schedule('0 1 * * *', () => {
+  console.log("Running Sitemap Cron");
+  // start the crawler
+  generator.start();
+},{
+timezone: "America/New_York"
+});
