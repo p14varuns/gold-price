@@ -76,7 +76,6 @@ getReturnsAsOf = async (date, callback) => {
 
 
 latestPosts = async(callback) => {
-  console.log("this is " + config.WP_DATABASE);
   var con = getConnection(config.WP_DATABASE);
   var sql =``
   `SELECT wpp.id, wpp.post_title, DATE_FORMAT(wpp.post_date, '%Y-%m-%d') as "post_date",
