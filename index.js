@@ -52,6 +52,7 @@ db.getReturnsAsOf(today, (results) => {
 // Initialization of Latest Posts
 db.latestPosts((results)=> {
   latestPosts = results;
+  console.log("Latest Posts Updated");
 });
 
 // Cron job to refresh prices every hour at 5th minute
@@ -72,6 +73,7 @@ cron.schedule('5 * * * *', () => {
 
   db.latestPosts((results)=> {
     latestPosts = results;
+    console.log("Latest Posts Updated");
   });
 },{
   timezone: "America/New_York"

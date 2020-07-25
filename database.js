@@ -77,7 +77,7 @@ getReturnsAsOf = async (date, callback) => {
 
 latestPosts = async(callback) => {
   var con = getConnection(config.WP_DATABASE);
-  var sql =``
+  var sql =
   `SELECT wpp.id, wpp.post_title, DATE_FORMAT(wpp.post_date, '%Y-%m-%d') as "post_date",
   REPLACE( REPLACE( wpo.option_value, '%post_id%', wpp.ID ), '%postname%', wpp.post_name ) AS permalink
   FROM wp_posts wpp
@@ -91,7 +91,9 @@ latestPosts = async(callback) => {
   con.query(sql, function (err, results) {
     if (err)
       throw err;
-    con.destroy(); 
+    con.destroy();
+    console.log("Latest Posts - ");
+    console.log(results);
     callback(results);
   });
 };
