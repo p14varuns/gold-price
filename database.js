@@ -1,12 +1,12 @@
 const mysql = require('mysql');
 const config = require('./config');
 
-getConnection = () => {
+getConnection = (db=config.DB_CREDENTIALS.DATABASE) => {
   return mysql.createConnection({
     host: config.DB_CREDENTIALS.HOST,
     user: config.DB_CREDENTIALS.USER,
     password: config.DB_CREDENTIALS.PASSWORD,
-    database: config.DB_CREDENTIALS.DATABASE
+    database: db
   });
 };
 
@@ -74,7 +74,32 @@ getReturnsAsOf = async (date, callback) => {
   });
 };
 
+
+latestPosts = async(callback) => {
+  console.log("this is " + config.WP_DATABASE);
+  var con = getConnection(config.WP_DATABASE);
+  var sql =``
+  `SELECT wpp.id, wpp.post_title, DATE_FORMAT(wpp.post_date, '%Y-%m-%d') as "post_date",
+  REPLACE( REPLACE( wpo.option_value, '%post_id%', wpp.ID ), '%postname%', wpp.post_name ) AS permalink
+  FROM wp_posts wpp
+  JOIN wp_options wpo
+  ON wpo.option_name = 'permalink_structure'
+  WHERE wpp.post_type = 'post'
+  AND wpp.post_status = 'publish'
+  ORDER BY wpp.ID DESC
+  LIMIT 3`;
+
+  con.query(sql, function (err, results) {
+    if (err)
+      throw err;
+    con.destroy(); 
+    callback(results);
+  });
+};
+
+
 module.exports = {
     addtoDatabase,
-    getReturnsAsOf
+    getReturnsAsOf,
+    latestPosts
 };

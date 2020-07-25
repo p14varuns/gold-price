@@ -9,6 +9,7 @@ moment.tz.setDefault("America/New_York");
 var today = moment();
 var prices = {};
 var returns = {};
+var latestPosts = {};
 
 var app = express();
 app.listen(3000, () => {
@@ -29,6 +30,14 @@ app.get('/returns', function(req, res) {
   res.json(returns);
 });
 
+
+app.get('/posts', function(req, res) {
+  // Return saved price value on API call
+  res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.json(latestPosts);
+});
+
 // Initialization of Price Data
 goldlib.getPriceData(today.clone()).then(result => {
   prices = result;
@@ -38,6 +47,11 @@ goldlib.getPriceData(today.clone()).then(result => {
 db.getReturnsAsOf(today, (results) => {
   returns = results;
   console.log("Returns Updated");
+});
+
+// Initialization of Latest Posts
+db.latestPosts((results)=> {
+  latestPosts = results;
 });
 
 // Cron job to refresh prices every hour at 5th minute
@@ -55,8 +69,10 @@ cron.schedule('5 * * * *', () => {
     returns = results;
     console.log("Returns Updated: " + returns);
   });
+
+  db.latestPosts((results)=> {
+    latestPosts = results;
+  });
 },{
   timezone: "America/New_York"
 });
-
-
