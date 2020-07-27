@@ -78,14 +78,18 @@ getReturnsAsOf = async (date, callback) => {
 latestPosts = async(callback) => {
   var con = getConnection(config.WP_DATABASE);
   var sql =
-  `SELECT wpp.id, wpp.post_title, DATE_FORMAT(wpp.post_date, '%Y-%m-%d') as "post_date",
+  `Select A.*, C.meta_value as "img_link"
+  FROM (SELECT wpp.id, wpp.post_title, DATE_FORMAT(wpp.post_date, '%Y-%m-%d') as "post_date",
   REPLACE( REPLACE( wpo.option_value, '%post_id%', wpp.ID ), '%postname%', wpp.post_name ) AS permalink
   FROM wp_posts wpp
   JOIN wp_options wpo
   ON wpo.option_name = 'permalink_structure'
   WHERE wpp.post_type = 'post'
-  AND wpp.post_status = 'publish'
-  ORDER BY wpp.ID DESC
+  AND wpp.post_status = 'publish')A 
+  LEFT JOIN (SELECT * FROM wp_postmeta WHERE meta_key='_thumbnail_id') B on A.id = B.post_id
+  LEFT JOIN (select post_id, meta_value from wp_postmeta where meta_key='_wp_attached_file')C 
+  on B.meta_value=C.post_id
+  ORDER BY post_date DESC
   LIMIT 3`;
 
   con.query(sql, function (err, results) {
