@@ -10,7 +10,8 @@ var filepath = config.PROD? '/var/www/goldometer.org/public_html/index.html': 'i
 async function run () {
   const browser = await puppeteer.launch({
     headless: true,
-    ignoreHTTPSErrors: true
+    ignoreHTTPSErrors: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
   });
   const page = await browser.newPage();
   console.log(1);
