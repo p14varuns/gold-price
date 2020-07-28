@@ -4,7 +4,7 @@ fs = require('fs');
 var cron = require('node-cron');
 require('log-timestamp');
 
-const url = "https://www.goldometer.org/";
+const url = "https://www.goldometer.org/homepage.html";
 var filepath = config.PROD? '/var/www/goldometer.org/public_html/index.html': 'index.html';
 
 async function run () {
