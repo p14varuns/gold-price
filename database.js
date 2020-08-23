@@ -64,10 +64,11 @@ getReturnsAsOf = async (date, callback) => {
     if(results){
       timeframe = ["30 Days", "6 Months", "1 Year", "5 Years", "20 Years"];
       for(i = 0; i < timeframe.length; i++){
-        returns[timeframe[i]] = {
-          "Amount": results[i]["Amount"],
-          "%Return": results[i]["%Return"]    
-        }
+        if(returns[timeframe[i]])
+          returns[timeframe[i]] = {
+            "Amount": results[i]["Amount"],
+            "%Return": results[i]["%Return"]
+          }
       };
     }
     callback(returns);
@@ -102,9 +103,28 @@ latestPosts = async(callback) => {
   });
 };
 
+getHistPrices = async(callback) => {
+  var con = getConnection();
+  var sql =
+  `SELECT StartDate, \`USD(AM)\` as Price
+  FROM goldprices.lbma_gold
+  ORDER BY StartDate DESC
+  LIMIT 30`;
+
+  con.query(sql, function(err, results){
+    if(err)
+      throw err;
+    con.destroy();
+    data = [];
+    for(i = 0; i < results.length; i++)
+      data[i] = [results[i].StartDate, results[i].Price];
+    callback(data);
+  })
+};
 
 module.exports = {
     addtoDatabase,
     getReturnsAsOf,
-    latestPosts
+    latestPosts,
+    getHistPrices
 };
