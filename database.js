@@ -64,7 +64,7 @@ getReturnsAsOf = async (date, callback) => {
     if(results){
       timeframe = ["30 Days", "6 Months", "1 Year", "5 Years", "20 Years"];
       for(i = 0; i < timeframe.length; i++){
-        if(returns[timeframe[i]])
+        if(results[i])
           returns[timeframe[i]] = {
             "Amount": results[i]["Amount"],
             "%Return": results[i]["%Return"]
