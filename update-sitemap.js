@@ -22,7 +22,7 @@ generator.on('done', () => {
 });
  
 
-cron.schedule('0 1 * * *', () => {
+cron.schedule('0 0,8,16 * * *', () => {
   console.log("Running Sitemap Cron");
   // start the crawler
   generator.start();
